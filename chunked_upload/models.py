@@ -4,12 +4,14 @@ import hashlib
 import uuid
 
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.utils import timezone
 
 from .settings import (EXPIRATION_DELTA, UPLOAD_PATH, STORAGE, ABSTRACT_MODEL)
 from .constants import CHUNKED_UPLOAD_CHOICES, UPLOADING
+
+AUTH_USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 
 
 def generate_upload_id():
@@ -27,7 +29,7 @@ class ChunkedUpload(models.Model):
     file = models.FileField(max_length=255, upload_to=generate_filename,
                             storage=STORAGE)
     filename = models.CharField(max_length=255)
-    user = models.ForeignKey(User, related_name='chunked_uploads')
+    user = models.ForeignKey(AUTH_USER_MODEL, related_name='chunked_uploads')
     offset = models.PositiveIntegerField(default=0)
     created_on = models.DateTimeField(auto_now_add=True)
     status = models.PositiveSmallIntegerField(choices=CHUNKED_UPLOAD_CHOICES,
