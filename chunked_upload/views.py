@@ -26,6 +26,12 @@ class ChunkedUploadBaseView(View):
         """
         return self.model.objects.filter(user=request.user)
 
+    def validate(self, request):
+        """
+        Placeholder method to define extra validation. Must raise
+        ChunkedUploadError if validation fails.
+        """
+
     def get_response_data(self, chunked_upload, request):
         """
         Data for the response. Should return a dictionary-like object.
@@ -141,6 +147,7 @@ class ChunkedUploadView(ChunkedUploadBaseView):
         if chunk is None:
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
                                      detail='No chunk file was submitted')
+        self.validate(request)
 
         upload_id = request.POST.get('upload_id')
         if upload_id:
@@ -207,10 +214,11 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
     def _post(self, request, *args, **kwargs):
         upload_id = request.POST.get('upload_id')
         md5 = request.POST.get('md5')
-        if not upload_id:
+        if not upload_id or not md5:
             error_msg = "Both 'upload_id' and 'md5' are required"
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
                                      detail=error_msg)
+        self.validate(request)
 
         chunked_upload = get_object_or_404(self.get_queryset(request),
                                            upload_id=upload_id)
