@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.core.files.base import ContentFile
 from django.utils import timezone
 
+from .settings import MAX_BYTES
 from .models import ChunkedUpload
 from .response import Response
 from .constants import http_status, COMPLETE, FAILED
@@ -98,7 +99,10 @@ class ChunkedUploadView(ChunkedUploadBaseView):
     """
 
     field_name = 'file'
-    content_range_pattern = re.compile(r'^bytes (?P<start>\d+)-(?P<end>\d+)/')
+    content_range_pattern = re.compile(
+        r'^bytes (?P<start>\d+)-(?P<end>\d+)/(?P<total>\d+)$'
+    )
+    max_bytes = MAX_BYTES  # Max amount of data that can be uploaded
 
     def get_extra_attrs(self, request):
         """
@@ -106,6 +110,16 @@ class ChunkedUploadView(ChunkedUploadBaseView):
         Should return a dictionary-like object.
         """
         return {}
+
+    def get_max_bytes(self, request):
+        """
+        Used to limit the max amount of data that can be uploaded. `None` means
+        no limit.
+        You can override this to have a custom `max_bytes`, e.g. based on
+        logged user.
+        """
+
+        return self.max_bytes
 
     def create_chunked_upload(self, save=False, **attrs):
         """
@@ -167,6 +181,14 @@ class ChunkedUploadView(ChunkedUploadBaseView):
 
         start = int(match.group('start'))
         end = int(match.group('end'))
+        total = int(match.group('total'))
+
+        max_bytes = self.get_max_bytes(request)
+        if max_bytes is not None and total > max_bytes:
+            raise ChunkedUploadError(
+                status=http_status.HTTP_400_BAD_REQUEST,
+                detail='Size of file exceeds the limit (%s bytes)' % max_bytes
+            )
         if chunked_upload.offset != start:
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
                                      detail='Offsets do not match',

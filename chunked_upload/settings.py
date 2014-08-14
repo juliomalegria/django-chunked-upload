@@ -41,3 +41,7 @@ ENCODER = getattr(settings, 'CHUNKED_UPLOAD_ENCODER', DEFAULT_ENCODER)
 # Mimetype for the response data
 DEFAULT_MIMETYPE = 'application/json'
 MIMETYPE = getattr(settings, 'CHUNKED_UPLOAD_MIMETYPE', DEFAULT_MIMETYPE)
+
+# Max amount of data (in bytes) that can be uploaded. `None` means no limit
+DEFAULT_MAX_BYTES = None
+MAX_BYTES = getattr(settings, 'CHUNKED_UPLOAD_MAX_BYTES', DEFAULT_MAX_BYTES)

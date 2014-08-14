@@ -38,13 +38,14 @@ the file. The key of this chunk can be overriden in the view (class attribute `f
 6. If everything is OK, server will response with status code 200 and the data returned in the method `get_response_data`
 (if any).
 
-### Possible errors:
+### Possible error responses:
 
 * User is not authenticated. Server responds 403 (Forbidden).
 * Upload has expired. Server responds 410 (Gone).
 * `upload_id` does not match any upload. Server responds 404 (Not found).
 * No chunk file is found in the indicated key. Server responds 400 (Bad request).
 * Request does not contain `Content-Range` header. Server responds 400 (Bad request).
+* Size of file exceeds limit (if specified).  Server responds 400 (Bad request).
 * Offsets does not match.  Server responds 400 (Bad request).
 * `md5` checksums does not match. Server responds 400 (Bad request).
 
@@ -81,6 +82,11 @@ Add any of these variables into your project settings to override them.
 
 * Mimetype for the response data.
 * Default: `'application/json'`
+
+#### `CHUNKED_UPLOAD_MAX_BYTES`
+
+* Max amount of data (in bytes) that can be uploaded. `None` means no limit.
+* Default: `None`
 
 ## Support
 
