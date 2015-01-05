@@ -182,8 +182,9 @@ class ChunkedUploadView(ChunkedUploadBaseView):
         start = int(match.group('start'))
         end = int(match.group('end'))
         total = int(match.group('total'))
-
+        chunk_size = end - start + 1
         max_bytes = self.get_max_bytes(request)
+
         if max_bytes is not None and total > max_bytes:
             raise ChunkedUploadError(
                 status=http_status.HTTP_400_BAD_REQUEST,
@@ -193,8 +194,10 @@ class ChunkedUploadView(ChunkedUploadBaseView):
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
                                      detail='Offsets do not match',
                                      offset=chunked_upload.offset)
+        if chunk.size != chunk_size:
+            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
+                                     detail="File size doesn't match headers")
 
-        chunk_size = end - start + 1
         chunked_upload.append_chunk(chunk, chunk_size=chunk_size, save=False)
 
         self._save(chunked_upload)
@@ -208,6 +211,10 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
     Completes an chunked upload. Method `on_completion` is a placeholder to
     define what to do when upload is complete.
     """
+
+    # I wouldn't recommend to turn off the md5 check, unless is really
+    # impacting your performance. Proceed at your own risk.
+    do_md5_check = True
 
     def on_completion(self, uploaded_file, request):
         """
@@ -236,16 +243,24 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
     def _post(self, request, *args, **kwargs):
         upload_id = request.POST.get('upload_id')
         md5 = request.POST.get('md5')
-        if not upload_id or not md5:
-            error_msg = "Both 'upload_id' and 'md5' are required"
+
+        error_msg = None
+        if self.do_md5_check:
+            if not upload_id or not md5:
+                error_msg = "Both 'upload_id' and 'md5' are required"
+        elif not upload_id:
+            error_msg = "'upload_id' is required"
+        if error_msg:
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
                                      detail=error_msg)
-        self.validate(request)
 
         chunked_upload = get_object_or_404(self.get_queryset(request),
                                            upload_id=upload_id)
+
+        self.validate(request)
         self.is_valid_chunked_upload(chunked_upload)
-        self.md5_check(chunked_upload, md5)
+        if self.do_md5_check:
+            self.md5_check(chunked_upload, md5)
 
         chunked_upload.status = COMPLETE
         chunked_upload.completed_on = timezone.now()

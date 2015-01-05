@@ -11,7 +11,7 @@ except ImportError:
             DateTimeAwareJSONEncoder as DjangoJSONEncoder
         )
     except ImportError:
-        raise ImportError('Dude! what Django version are you using?')
+        raise ImportError('Dude! what version of Django are you using?')
 
 
 # How long after creation the upload will expire
@@ -41,6 +41,7 @@ ENCODER = getattr(settings, 'CHUNKED_UPLOAD_ENCODER', DEFAULT_ENCODER)
 # Mimetype for the response data
 DEFAULT_MIMETYPE = 'application/json'
 MIMETYPE = getattr(settings, 'CHUNKED_UPLOAD_MIMETYPE', DEFAULT_MIMETYPE)
+
 
 # Max amount of data (in bytes) that can be uploaded. `None` means no limit
 DEFAULT_MAX_BYTES = None
