@@ -1,0 +1,3 @@
+recursive-include chunked_upload *
+include *.rst
+include *.txt
