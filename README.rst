@@ -7,6 +7,24 @@ This app is intented to work with `JQuery-File-Upload <https://github.com/blueim
 
 License: `MIT-Zero <https://romanrm.net/mit-zero>`__.
 
+Installation
+------------
+
+**NEW:** This module is now in PyPI! Install via pip:
+
+::
+
+    pip install django-chunked-upload
+
+And then add it to your Django ``INSTALLED_APPS``:
+
+.. code:: python
+
+    INSTALLED_APPS = (
+        # ...
+        'chunked_upload',
+    )
+
 Typical usage
 -------------
 
