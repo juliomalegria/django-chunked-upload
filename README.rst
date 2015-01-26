@@ -3,9 +3,14 @@ django-chunked-upload
 
 This simple django app enables users to upload large files to Django in multiple chunks, with the ability to resume if the upload is interrupted.
 
-This app is intented to work with `JQuery-File-Upload <https://github.com/blueimp/jQuery-File-Upload>`__ by `Sebastian Tschan <https://blueimp.net>`__.
+This app is intented to work with `JQuery-File-Upload <https://github.com/blueimp/jQuery-File-Upload>`__ by `Sebastian Tschan <https://blueimp.net>`__ (`documentation <https://github.com/blueimp/jQuery-File-Upload/wiki>`__).
 
 License: `MIT-Zero <https://romanrm.net/mit-zero>`__.
+
+Demo
+----
+
+If you want to see a very simple Django demo project using this module, please take a look at `django-chunked-upload-demo <https://github.com/juliomalegria/django-chunked-upload-demo>`__.
 
 Installation
 ------------
