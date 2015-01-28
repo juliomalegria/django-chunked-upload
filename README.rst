@@ -118,11 +118,16 @@ Add any of these variables into your project settings to override them.
 * Function used to encode response data. Receives a dict and returns a string
 * Default: ``DjangoJSONEncoder().encode``
 
+``CHUNKED_UPLOAD_CONTENT_TYPE``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Content-Type for the response data.
+* Default: ``'application/json'``
+
 ``CHUNKED_UPLOAD_MIMETYPE``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Mimetype for the response data.
-* Default: ``'application/json'``
+* **Deprecated**, use ``CHUNKED_UPLOAD_CONTENT_TYPE`` instead.
 
 ``CHUNKED_UPLOAD_MAX_BYTES``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

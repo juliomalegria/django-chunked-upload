@@ -38,9 +38,15 @@ DEFAULT_ENCODER = DjangoJSONEncoder().encode
 ENCODER = getattr(settings, 'CHUNKED_UPLOAD_ENCODER', DEFAULT_ENCODER)
 
 
-# Mimetype for the response data
-DEFAULT_MIMETYPE = 'application/json'
-MIMETYPE = getattr(settings, 'CHUNKED_UPLOAD_MIMETYPE', DEFAULT_MIMETYPE)
+# Content-Type for the response data
+DEFAULT_CONTENT_TYPE = 'application/json'
+CONTENT_TYPE = getattr(settings, 'CHUNKED_UPLOAD_CONTENT_TYPE',
+                       DEFAULT_CONTENT_TYPE)
+
+
+# CHUNKED_UPLOAD_MIMETYPE is deprecated, but kept for backward compatibility
+CONTENT_TYPE = getattr(settings, 'CHUNKED_UPLOAD_MIMETYPE',
+                       DEFAULT_CONTENT_TYPE)
 
 
 # Max amount of data (in bytes) that can be uploaded. `None` means no limit
