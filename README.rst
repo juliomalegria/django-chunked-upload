@@ -119,7 +119,7 @@ Add any of these variables into your project settings to override them.
 * Default: ``DjangoJSONEncoder().encode``
 
 ``CHUNKED_UPLOAD_CONTENT_TYPE``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Content-Type for the response data.
 * Default: ``'application/json'``
