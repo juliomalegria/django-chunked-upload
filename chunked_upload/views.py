@@ -179,13 +179,16 @@ class ChunkedUploadView(ChunkedUploadBaseView):
 
         content_range = request.META.get('HTTP_CONTENT_RANGE', '')
         match = self.content_range_pattern.match(content_range)
-        if not match:
-            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
-                                     detail='Error in request headers')
+        if match:
+            start = int(match.group('start'))
+            end = int(match.group('end'))
+            total = int(match.group('total'))
+        else:
+            # Use the whole size when HTTP_CONTENT_RANGE is not provided.
+            start = 0
+            end = chunk.size - 1
+            total = chunk.size
 
-        start = int(match.group('start'))
-        end = int(match.group('end'))
-        total = int(match.group('total'))
         chunk_size = end - start + 1
         max_bytes = self.get_max_bytes(request)
 
