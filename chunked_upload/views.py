@@ -8,7 +8,8 @@ from django.utils import timezone
 from .settings import MAX_BYTES
 from .models import ChunkedUpload
 from .response import Response
-from .constants import http_status, COMPLETE, FAILED
+from .constants import (http_status, COMPLETE, FAILED,
+                        SUPPORTED_CHUCKSUM_ALGORITHMS)
 from .exceptions import ChunkedUploadError
 
 
@@ -227,9 +228,13 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
     define what to do when upload is complete.
     """
 
-    # I wouldn't recommend to turn off the md5 check, unless is really
+    # I wouldn't recommend to turn off the checksum check, unless is really
     # impacting your performance. Proceed at your own risk.
-    do_md5_check = True
+    do_checksum_check = True
+
+    # You can choose any checksum type in 'SUPPORTED_CHECKSUM_ALGORITHM'.
+    # And multiple checksums check is supoorted.
+    supported_checksums = SUPPORTED_CHUCKSUM_ALGORITHMS
 
     def on_completion(self, uploaded_file, request):
         """
@@ -245,25 +250,23 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
             return ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
                                       detail=error_msg)
 
-    def md5_check(self, chunked_upload, md5):
+    def checksum_check(self, checksum_alg, chunked_upload, checksum):
         """
-        Verify if md5 checksum sent by client matches generated md5.
+        Verify if checksum sent by client matches generated checksum.
         """
-        if chunked_upload.md5 != md5:
+        if getattr(chunked_upload, checksum_alg, None) != checksum:
             chunked_upload.status = FAILED
             self._save(chunked_upload)
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
-                                     detail='md5 checksum does not match')
+                                     detail='%s check does not match. '
+                                            '%s expected.' %
+                                            (checksum_alg, getattr(chunked_upload, checksum_alg, None)))
 
     def _post(self, request, *args, **kwargs):
         upload_id = request.POST.get('upload_id')
-        md5 = request.POST.get('md5')
 
         error_msg = None
-        if self.do_md5_check:
-            if not upload_id or not md5:
-                error_msg = "Both 'upload_id' and 'md5' are required"
-        elif not upload_id:
+        if not upload_id:
             error_msg = "'upload_id' is required"
         if error_msg:
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
@@ -274,8 +277,17 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
 
         self.validate(request)
         self.is_valid_chunked_upload(chunked_upload)
-        if self.do_md5_check:
-            self.md5_check(chunked_upload, md5)
+
+        if self.do_checksum_check:
+            for checksum_alg in self.supported_checksums:
+                if checksum_alg in request.POST:
+                    self.checksum_check(checksum_alg, chunked_upload, request.POST[checksum_alg])
+                    break
+            else: # Didn't find any checksum
+                raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
+                                         detail="Didn't find any checksum, "
+                                                "checksum in %s is required." %
+                                                self.supported_checksums)
 
         chunked_upload.status = COMPLETE
         chunked_upload.completed_on = timezone.now()

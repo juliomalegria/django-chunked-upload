@@ -16,3 +16,14 @@ CHUNKED_UPLOAD_CHOICES = (
     (COMPLETE, _('Complete')),
     (FAILED, _('Failed')),
 )
+
+SUPPORTED_CHUCKSUM_ALGORITHMS = (
+    'md5',
+    'sha1',
+    'sha224'
+    'sha256',
+    'sha384',
+    'sha512',
+    'crc32',
+    'adler32',
+)
