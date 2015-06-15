@@ -30,7 +30,7 @@ class ChunkedUpload(models.Model):
                             storage=STORAGE)
     filename = models.CharField(max_length=255)
     user = models.ForeignKey(AUTH_USER_MODEL, related_name='chunked_uploads')
-    offset = models.PositiveIntegerField(default=0)
+    offset = models.BigIntegerField(default=0)
     created_on = models.DateTimeField(auto_now_add=True)
     status = models.PositiveSmallIntegerField(choices=CHUNKED_UPLOAD_CHOICES,
                                               default=UPLOADING)
