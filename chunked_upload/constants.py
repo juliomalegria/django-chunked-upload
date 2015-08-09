@@ -17,7 +17,7 @@ CHUNKED_UPLOAD_CHOICES = (
     (FAILED, _('Failed')),
 )
 
-SUPPORTED_CHUCKSUM_ALGORITHMS = (
+SUPPORTED_CHECKSUM_ALGORITHMS = (
     'md5',
     'sha1',
     'sha224'

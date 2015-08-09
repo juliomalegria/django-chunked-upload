@@ -56,8 +56,6 @@ class ChunkedUpload(models.Model):
 
     @property
     def sha1(self):
-        print(self.__dict__)
-        print(123)
         if getattr(self, '_sha1', None) is None:
             sha1 = hashlib.sha1()
             for chunk in self.file.chunks():
