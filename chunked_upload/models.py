@@ -23,13 +23,18 @@ def generate_filename(instance, filename):
     return time.strftime(filename)
 
 
-class ChunkedUpload(models.Model):
+class BaseChunkedUpload(models.Model):
+    """
+    Base chunked upload model. This model is abstract (doesn't create a table
+    in the database).
+    Inherit from this model to implement your own.
+    """
+
     upload_id = models.CharField(max_length=32, unique=True, editable=False,
                                  default=generate_upload_id)
     file = models.FileField(max_length=255, upload_to=generate_filename,
                             storage=STORAGE)
     filename = models.CharField(max_length=255)
-    user = models.ForeignKey(AUTH_USER_MODEL, related_name='chunked_uploads')
     offset = models.BigIntegerField(default=0)
     created_on = models.DateTimeField(auto_now_add=True)
     status = models.PositiveSmallIntegerField(choices=CHUNKED_UPLOAD_CHOICES,
@@ -55,7 +60,7 @@ class ChunkedUpload(models.Model):
 
     def delete(self, delete_file=True, *args, **kwargs):
         storage, path = self.file.storage, self.file.path
-        super(ChunkedUpload, self).delete(*args, **kwargs)
+        super(BaseChunkedUpload, self).delete(*args, **kwargs)
         if delete_file:
             storage.delete(path)
 
@@ -95,6 +100,18 @@ class ChunkedUpload(models.Model):
         self.file.open(mode='rb')  # mode = read+binary
         return UploadedFile(file=self.file, name=self.filename,
                             size=self.offset)
+
+    class Meta:
+        abstract = True
+
+
+class ChunkedUpload(BaseChunkedUpload):
+    """
+    Default chunked upload model.
+    To use it, set CHUNKED_UPLOAD_ABSTRACT_MODEL as True in your settings.
+    """
+
+    user = models.ForeignKey(AUTH_USER_MODEL, related_name='chunked_uploads')
 
     class Meta:
         abstract = ABSTRACT_MODEL

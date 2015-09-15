@@ -8,7 +8,7 @@ from django.utils import timezone
 from .settings import MAX_BYTES
 from .models import ChunkedUpload
 from .response import Response
-from .constants import http_status, COMPLETE, FAILED
+from .constants import http_status, COMPLETE
 from .exceptions import ChunkedUploadError
 
 
@@ -23,17 +23,17 @@ class ChunkedUploadBaseView(View):
     def get_queryset(self, request):
         """
         Get (and filter) ChunkedUpload queryset.
-        By default, user can only continue uploading his own uploads.
+        By default, users can only continue uploading their own uploads.
         """
         queryset = self.model.objects.all()
-        if request.user.is_authenticated():
+        if hasattr(request, 'user') and request.user.is_authenticated():
             queryset = queryset.filter(user=request.user)
         return queryset
 
     def validate(self, request):
         """
-        Placeholder method to define extra validation. Must raise
-        ChunkedUploadError if validation fails.
+        Placeholder method to define extra validation.
+        Must raise ChunkedUploadError if validation fails.
         """
 
     def get_response_data(self, chunked_upload, request):
@@ -75,7 +75,7 @@ class ChunkedUploadBaseView(View):
         """
         Grants permission to start/continue an upload based on the request.
         """
-        if not request.user.is_authenticated():
+        if hasattr(request, 'user') and not request.user.is_authenticated():
             raise ChunkedUploadError(
                 status=http_status.HTTP_403_FORBIDDEN,
                 detail='Authentication credentials were not provided'
@@ -150,9 +150,6 @@ class ChunkedUploadView(ChunkedUploadBaseView):
         if chunked_upload.status == COMPLETE:
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
                                      detail=error_msg % 'complete')
-        if chunked_upload.status == FAILED:
-            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
-                                     detail=error_msg % 'failed')
 
     def get_response_data(self, chunked_upload, request):
         """
@@ -177,8 +174,9 @@ class ChunkedUploadView(ChunkedUploadBaseView):
                                                upload_id=upload_id)
             self.is_valid_chunked_upload(chunked_upload)
         else:
-            user = request.user if request.user.is_authenticated() else None
-            attrs = {'user': user, 'filename': chunk.name}
+            attrs = {'filename': chunk.name}
+            if hasattr(request, 'user') and request.user.is_authenticated():
+                attrs['user'] = request.user
             attrs.update(self.get_extra_attrs(request))
             chunked_upload = self.create_chunked_upload(save=False, **attrs)
 
@@ -250,8 +248,6 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
         Verify if md5 checksum sent by client matches generated md5.
         """
         if chunked_upload.md5 != md5:
-            chunked_upload.status = FAILED
-            self._save(chunked_upload)
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
                                      detail='md5 checksum does not match')
 

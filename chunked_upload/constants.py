@@ -9,10 +9,8 @@ class http_status:
 
 UPLOADING = 1
 COMPLETE = 2
-FAILED = 3
 
 CHUNKED_UPLOAD_CHOICES = (
     (UPLOADING, _('Uploading')),
     (COMPLETE, _('Complete')),
-    (FAILED, _('Failed')),
 )

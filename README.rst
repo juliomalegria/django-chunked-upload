@@ -15,7 +15,7 @@ If you want to see a very simple Django demo project using this module, please t
 Installation
 ------------
 
-**NEW:** This module is now in PyPI! Install via pip:
+Install via pip:
 
 ::
 
@@ -103,19 +103,19 @@ Add any of these variables into your project settings to override them.
 ``CHUNKED_UPLOAD_STORAGE_CLASS``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Storage system (should be a class)
+* Storage system (should be a class).
 * Default: ``None`` (use default storage system)
 
 ``CHUNKED_UPLOAD_ABSTRACT_MODEL``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Boolean that defines if the ``ChunkedUpload`` model will be abstract or not (`what does abstract model mean? <https://docs.djangoproject.com/en/1.4/ref/models/options/#abstract>`__)
+* Boolean that defines if the ``ChunkedUpload`` model will be abstract or not (`what does abstract model mean? <https://docs.djangoproject.com/en/1.4/ref/models/options/#abstract>`__).
 * Default: ``True``
 
 ``CHUNKED_UPLOAD_ENCODER``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Function used to encode response data. Receives a dict and returns a string
+* Function used to encode response data. Receives a dict and returns a string.
 * Default: ``DjangoJSONEncoder().encode``
 
 ``CHUNKED_UPLOAD_CONTENT_TYPE``
@@ -132,7 +132,7 @@ Add any of these variables into your project settings to override them.
 ``CHUNKED_UPLOAD_MAX_BYTES``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Max amount of data (in bytes) that can be uploaded. ``None`` means no limit
+* Max amount of data (in bytes) that can be uploaded. ``None`` means no limit.
 * Default: ``None``
 
 Support
