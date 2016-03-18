@@ -1,6 +1,8 @@
 import re
+import operator
 
 from django.views.generic import View
+from django.shortcuts import get_list_or_404
 from django.shortcuts import get_object_or_404
 from django.core.files.base import ContentFile
 from django.utils import timezone
@@ -8,7 +10,7 @@ from django.utils import timezone
 from .settings import MAX_BYTES
 from .models import ChunkedUpload
 from .response import Response
-from .constants import http_status, COMPLETE
+from .constants import http_status, COMPLETE, UPLOADING
 from .exceptions import ChunkedUploadError
 
 
@@ -76,10 +78,7 @@ class ChunkedUploadBaseView(View):
         Grants permission to start/continue an upload based on the request.
         """
         if hasattr(request, 'user') and not request.user.is_authenticated():
-            raise ChunkedUploadError(
-                status=http_status.HTTP_403_FORBIDDEN,
-                detail='Authentication credentials were not provided'
-            )
+            raise ChunkedUploadError(status=http_status.HTTP_403_FORBIDDEN, error='Authentication credentials were not provided')
 
     def _post(self, request, *args, **kwargs):
         raise NotImplementedError
@@ -91,6 +90,37 @@ class ChunkedUploadBaseView(View):
         try:
             self.check_permissions(request)
             return self._post(request, *args, **kwargs)
+        except ChunkedUploadError as error:
+            return Response(error.data, status=error.status_code)
+
+class ChunkResumeUploadView(ChunkedUploadBaseView):
+
+    def _get(self, request, *args, **kwargs):
+
+        md5_checksum = request.GET.get('md5_checksum')
+        if not md5_checksum:
+            return Response({'error': 'request missing md5 query parameter'}, status=http_status.HTTP_400_BAD_REQUEST)
+
+        data = {}
+
+        uploading_file = self.get_queryset(request).filter(md5_checksum=md5_checksum, status=UPLOADING, user_id=request.user.id).order_by('-created_on')
+        if not uploading_file:
+            data['size'] = 0
+        else:
+            data['size'] = uploading_file[0].offset
+            data['upload_id'] = uploading_file[0].upload_id
+            data['status'] = uploading_file[0].status
+            data['created_on'] = uploading_file[0].created_on
+
+        return Response(data, status=http_status.HTTP_200_OK)
+
+    def get(self, request, *args, **kwargs):
+        """
+        Handle GET requests.
+        """
+        try:
+            self.check_permissions(request)
+            return self._get(request, *args, **kwargs)
         except ChunkedUploadError as error:
             return Response(error.data, status=error.status_code)
 
@@ -144,12 +174,9 @@ class ChunkedUploadView(ChunkedUploadBaseView):
         Check if chunked upload has already expired or is already complete.
         """
         if chunked_upload.expired:
-            raise ChunkedUploadError(status=http_status.HTTP_410_GONE,
-                                     detail='Upload has expired')
-        error_msg = 'Upload has already been marked as "%s"'
+            raise ChunkedUploadError(status=http_status.HTTP_410_GONE, error='Upload has expired')
         if chunked_upload.status == COMPLETE:
-            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
-                                     detail=error_msg % 'complete')
+            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error='User cannot upload the same file twice')
 
     def get_response_data(self, chunked_upload, request):
         """
@@ -164,20 +191,31 @@ class ChunkedUploadView(ChunkedUploadBaseView):
     def _post(self, request, *args, **kwargs):
         chunk = request.FILES.get(self.field_name)
         if chunk is None:
-            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
-                                     detail='No chunk file was submitted')
+            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error='No chunk file was submitted')
+
+        md5_checksum = request.POST.get('md5_checksum')
+        if md5_checksum is None:
+            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error='Missing md5 checksum')
+
         self.validate(request)
 
         upload_id = request.POST.get('upload_id')
+
+        # check if file was previously uploaded
+        if not upload_id and md5_checksum:
+            uploads_ordered = self.get_queryset(request).filter(md5_checksum=md5_checksum, status=COMPLETE, user_id=request.user.id).order_by('-created_on')
+            if uploads_ordered:
+                upload_id = uploads_ordered.latest('created_on').upload_id
+
         if upload_id:
-            chunked_upload = get_object_or_404(self.get_queryset(request),
-                                               upload_id=upload_id)
+            chunked_upload = get_object_or_404(self.get_queryset(request), upload_id=upload_id, md5_checksum=md5_checksum)
             self.is_valid_chunked_upload(chunked_upload)
         else:
-            attrs = {'filename': chunk.name}
+            attrs = {'filename': chunk.name, 'md5_checksum': md5_checksum}
             if hasattr(request, 'user') and request.user.is_authenticated():
                 attrs['user'] = request.user
             attrs.update(self.get_extra_attrs(request))
+
             chunked_upload = self.create_chunked_upload(save=False, **attrs)
 
         content_range = request.META.get(self.content_range_header, '')
@@ -187,8 +225,7 @@ class ChunkedUploadView(ChunkedUploadBaseView):
             end = int(match.group('end'))
             total = int(match.group('total'))
         elif self.fail_if_no_header:
-            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
-                                     detail='Error in request headers')
+            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error='Error in request headers')
         else:
             # Use the whole size when HTTP_CONTENT_RANGE is not provided
             start = 0
@@ -199,24 +236,17 @@ class ChunkedUploadView(ChunkedUploadBaseView):
         max_bytes = self.get_max_bytes(request)
 
         if max_bytes is not None and total > max_bytes:
-            raise ChunkedUploadError(
-                status=http_status.HTTP_400_BAD_REQUEST,
-                detail='Size of file exceeds the limit (%s bytes)' % max_bytes
-            )
+            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error='Size of file exceeds the limit (%s bytes)' % max_bytes)
         if chunked_upload.offset != start:
-            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
-                                     detail='Offsets do not match',
-                                     offset=chunked_upload.offset)
+            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error='Offsets do not match', offset=chunked_upload.offset)
         if chunk.size != chunk_size:
-            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
-                                     detail="File size doesn't match headers")
+            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error="File size doesn't match headers")
 
         chunked_upload.append_chunk(chunk, chunk_size=chunk_size, save=False)
 
         self._save(chunked_upload)
 
-        return Response(self.get_response_data(chunked_upload, request),
-                        status=http_status.HTTP_200_OK)
+        return Response(self.get_response_data(chunked_upload, request), status=http_status.HTTP_200_OK)
 
 
 class ChunkedUploadCompleteView(ChunkedUploadBaseView):
@@ -240,16 +270,14 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
         """
         if chunked_upload.status == COMPLETE:
             error_msg = "Upload has already been marked as complete"
-            return ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
-                                      detail=error_msg)
+            return ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error=error_msg)
 
     def md5_check(self, chunked_upload, md5):
         """
         Verify if md5 checksum sent by client matches generated md5.
         """
         if chunked_upload.md5 != md5:
-            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
-                                     detail='md5 checksum does not match')
+            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error='md5 checksum does not match')
 
     def _post(self, request, *args, **kwargs):
         upload_id = request.POST.get('upload_id')
@@ -262,11 +290,9 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
         elif not upload_id:
             error_msg = "'upload_id' is required"
         if error_msg:
-            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
-                                     detail=error_msg)
+            raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error=error_msg)
 
-        chunked_upload = get_object_or_404(self.get_queryset(request),
-                                           upload_id=upload_id)
+        chunked_upload = get_object_or_404(self.get_queryset(request), upload_id=upload_id)
 
         self.validate(request)
         self.is_valid_chunked_upload(chunked_upload)
@@ -278,5 +304,4 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
         self._save(chunked_upload)
         self.on_completion(chunked_upload.get_uploaded_file(), request)
 
-        return Response(self.get_response_data(chunked_upload, request),
-                        status=http_status.HTTP_200_OK)
+        return Response(self.get_response_data(chunked_upload, request), status=http_status.HTTP_200_OK)
