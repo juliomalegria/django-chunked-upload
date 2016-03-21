@@ -33,6 +33,7 @@ class BaseChunkedUpload(models.Model):
     file = models.FileField(max_length=255, upload_to=generate_filename, storage=STORAGE)
     filename = models.CharField(max_length=255)
     offset = models.BigIntegerField(default=0)
+    md5_checksum = models.CharField(max_length=32, null=True, blank=False)
     created_on = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=16, choices=CHUNKED_UPLOAD_CHOICES, default=UPLOADING)
     completed_on = models.DateTimeField(null=True, blank=True)
