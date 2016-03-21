@@ -19,9 +19,13 @@ def generate_upload_id():
 
 
 def generate_filename(instance, filename):
-    filename = os.path.join(UPLOAD_PATH, instance.upload_id + '.part')
-    return time.strftime(filename)
+    file_name = instance.upload_id + '.part'
+    if '.' in instance.filename:
+        extension = '.' + instance.filename.split('.')[-1]
+        file_name = instance.upload_id + extension + '.part'
 
+    filename = os.path.join(UPLOAD_PATH, file_name)
+    return time.strftime(filename)
 
 class BaseChunkedUpload(models.Model):
     """
