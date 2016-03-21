@@ -29,16 +29,12 @@ class BaseChunkedUpload(models.Model):
     in the database).
     Inherit from this model to implement your own.
     """
-
-    upload_id = models.CharField(max_length=32, unique=True, editable=False,
-                                 default=generate_upload_id)
-    file = models.FileField(max_length=255, upload_to=generate_filename,
-                            storage=STORAGE)
+    upload_id = models.CharField(max_length=32, unique=True, editable=False, default=generate_upload_id)
+    file = models.FileField(max_length=255, upload_to=generate_filename, storage=STORAGE)
     filename = models.CharField(max_length=255)
     offset = models.BigIntegerField(default=0)
     created_on = models.DateTimeField(auto_now_add=True)
-    status = models.PositiveSmallIntegerField(choices=CHUNKED_UPLOAD_CHOICES,
-                                              default=UPLOADING)
+    status = models.CharField(max_length=16, choices=CHUNKED_UPLOAD_CHOICES, default=UPLOADING)
     completed_on = models.DateTimeField(null=True, blank=True)
 
     @property
