@@ -292,9 +292,7 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
             error_msg = "'upload_id' is required"
         if error_msg:
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error=error_msg)
-
-
-
+            
         chunked_upload = get_object_or_404(self.get_queryset(request), upload_id=upload_id)
 
         self.validate(request)
