@@ -93,6 +93,7 @@ class ChunkedUploadBaseView(View):
         except ChunkedUploadError as error:
             return Response(error.data, status=error.status_code)
 
+
 class ChunkResumeUploadView(ChunkedUploadBaseView):
 
     def _get(self, request, *args, **kwargs):
@@ -280,8 +281,8 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error='md5 checksum does not match')
 
     def _post(self, request, *args, **kwargs):
-        upload_id = request.POST.get('upload_id')
-        md5 = request.POST.get('md5')
+        upload_id = request.data['upload_id']
+        md5 = request.data['md5']
 
         error_msg = None
         if self.do_md5_check:
@@ -292,6 +293,8 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
         if error_msg:
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error=error_msg)
 
+
+
         chunked_upload = get_object_or_404(self.get_queryset(request), upload_id=upload_id)
 
         self.validate(request)
@@ -301,6 +304,7 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
 
         chunked_upload.status = COMPLETE
         chunked_upload.completed_on = timezone.now()
+
         self._save(chunked_upload)
         self.on_completion(chunked_upload.get_uploaded_file(), request)
 
