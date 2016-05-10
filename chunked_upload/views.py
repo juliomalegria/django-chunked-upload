@@ -110,6 +110,7 @@ class ChunkResumeUploadView(ChunkedUploadBaseView):
         else:
             data['size'] = uploading_file[0].offset
             data['status'] = uploading_file[0].status
+            data['upload_id'] = uploading_file[0].upload_id
             data['created_on'] = uploading_file[0].created_on
 
         return Response(data, status=http_status.HTTP_200_OK)
