@@ -104,12 +104,11 @@ class ChunkResumeUploadView(ChunkedUploadBaseView):
 
         data = {}
 
-        uploading_file = self.get_queryset(request).filter(md5_checksum=md5_checksum, status=UPLOADING, user_id=request.user.id).order_by('-created_on')
+        uploading_file = self.get_queryset(request).filter(md5_checksum=md5_checksum, user_id=request.user.id).order_by('-created_on')
         if not uploading_file:
             data['size'] = 0
         else:
             data['size'] = uploading_file[0].offset
-            data['upload_id'] = uploading_file[0].upload_id
             data['status'] = uploading_file[0].status
             data['created_on'] = uploading_file[0].created_on
 
@@ -292,7 +291,7 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
             error_msg = "'upload_id' is required"
         if error_msg:
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST, error=error_msg)
-            
+
         chunked_upload = get_object_or_404(self.get_queryset(request), upload_id=upload_id)
 
         self.validate(request)
