@@ -59,9 +59,10 @@ class BaseChunkedUpload(models.Model):
         return self._md5
 
     def delete(self, delete_file=True, *args, **kwargs):
-        storage, path = self.file.storage, self.file.path
+        if self.file:
+            storage, path = self.file.storage, self.file.path
         super(BaseChunkedUpload, self).delete(*args, **kwargs)
-        if delete_file:
+        if self.file and delete_file:
             storage.delete(path)
 
     def __unicode__(self):
