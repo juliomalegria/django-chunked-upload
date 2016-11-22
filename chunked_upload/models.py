@@ -19,9 +19,13 @@ def generate_upload_id():
 
 
 def generate_filename(instance, filename):
-    filename = os.path.join(UPLOAD_PATH, instance.upload_id + '.part')
-    return time.strftime(filename)
+    file_name = instance.upload_id + '.part'
+    if '.' in instance.filename:
+        extension = '.' + instance.filename.split('.')[-1]
+        file_name = instance.upload_id + extension + '.part'
 
+    filename = os.path.join(UPLOAD_PATH, file_name)
+    return time.strftime(filename)
 
 class BaseChunkedUpload(models.Model):
     """
@@ -29,16 +33,13 @@ class BaseChunkedUpload(models.Model):
     in the database).
     Inherit from this model to implement your own.
     """
-
-    upload_id = models.CharField(max_length=32, unique=True, editable=False,
-                                 default=generate_upload_id)
-    file = models.FileField(max_length=255, upload_to=generate_filename,
-                            storage=STORAGE)
+    upload_id = models.CharField(max_length=32, unique=True, editable=False, default=generate_upload_id)
+    file = models.FileField(max_length=255, upload_to=generate_filename, storage=STORAGE)
     filename = models.CharField(max_length=255)
     offset = models.BigIntegerField(default=0)
+    md5_checksum = models.CharField(max_length=32, null=True, blank=False)
     created_on = models.DateTimeField(auto_now_add=True)
-    status = models.PositiveSmallIntegerField(choices=CHUNKED_UPLOAD_CHOICES,
-                                              default=UPLOADING)
+    status = models.CharField(max_length=16, choices=CHUNKED_UPLOAD_CHOICES, default=UPLOADING)
     completed_on = models.DateTimeField(null=True, blank=True)
 
     @property
