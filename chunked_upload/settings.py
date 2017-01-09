@@ -1,3 +1,4 @@
+from importlib import import_module
 from datetime import timedelta
 
 from django.conf import settings
@@ -26,8 +27,13 @@ UPLOAD_PATH = getattr(settings, 'CHUNKED_UPLOAD_PATH', DEFAULT_UPLOAD_PATH)
 
 
 # Storage system
-STORAGE = getattr(settings, 'CHUNKED_UPLOAD_STORAGE_CLASS', lambda: None)()
-
+storagename = getattr(settings, 'CHUNKED_UPLOAD_STORAGE_CLASS', None)
+if storagename:
+    path, cls = storagename.rsplit(".", maxsplit=1)
+    storagemodule = import_module(path)
+    STORAGE = storagemodule.getattr(cls, lambda: None)()
+else:
+    STORAGE = (lambda: None)()
 
 # Boolean that defines if the ChunkedUpload model is abstract or not
 ABSTRACT_MODEL = getattr(settings, 'CHUNKED_UPLOAD_ABSTRACT_MODEL', True)
