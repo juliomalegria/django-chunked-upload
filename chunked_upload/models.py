@@ -19,7 +19,7 @@ def generate_upload_id():
 
 
 def generate_filename(instance, filename):
-	filename = os.path.join(UPLOAD_PATH, instance.upload_id + '.part')
+	filename = os.path.join(UPLOAD_PATH, instance.dataset.upload_id + '.part')
 	return time.strftime(filename)
 
 
@@ -75,7 +75,7 @@ class BaseChunkedUpload(models.Model):
 
 	def __unicode__(self):
 		return u'<%s - upload_id: %s - bytes: %s - status: %s>' % (
-			self.filename, self.upload_id, self.offset, self.status)
+			self.filename, self.dataset.upload_id, self.offset, self.status)
 
 	def close_file(self):
 		"""
