@@ -158,7 +158,7 @@ class ChunkedUploadView(ChunkedUploadBaseView):
 		Data for the response. Should return a dictionary-like object.
 		"""
 		return {
-			'upload_id': chunked_upload.upload_id,
+			'upload_id': chunked_upload.dataset.upload_id,
 			'offset': chunked_upload.offset,
 			'expires': chunked_upload.expires_on
 		}
@@ -269,18 +269,16 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
 			raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
 									 detail=error_msg)
 
-		chunked_upload = get_object_or_404(self.get_queryset(request),
-										   upload_id=upload_id)
+		for chunked_upload in self.get_queryset(request).filter(dataset__upload_id=upload_id):
+			self.validate(request)
+			self.is_valid_chunked_upload(chunked_upload)
+			if self.do_md5_check:
+				self.md5_check(chunked_upload, md5)
 
-		self.validate(request)
-		self.is_valid_chunked_upload(chunked_upload)
-		if self.do_md5_check:
-			self.md5_check(chunked_upload, md5)
+			chunked_upload.status = COMPLETE
+			chunked_upload.completed_on = timezone.now()
+			self._save(chunked_upload)
+			self.on_completion(chunked_upload.get_uploaded_file(), request)
 
-		chunked_upload.status = COMPLETE
-		chunked_upload.completed_on = timezone.now()
-		self._save(chunked_upload)
-		self.on_completion(chunked_upload.get_uploaded_file(), request)
-
-		return Response(self.get_response_data(chunked_upload, request),
+		return Response(self.get_response_data(upload_id, request),
 						status=http_status.HTTP_200_OK)
