@@ -5,7 +5,7 @@ from .settings import ABSTRACT_MODEL
 
 
 class ChunkedUploadAdmin(admin.ModelAdmin):
-    list_display = ('upload_id', 'filename', 'user', 'status', 'created_on')
+    list_display = ('dataset__upload_id', 'filename', 'user', 'status', 'created_on', 'field_name')
     search_fields = ('filename',)
     list_filter = ('status',)
 
