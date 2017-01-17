@@ -180,7 +180,7 @@ class ChunkedUploadView(ChunkedUploadBaseView):
 			try:
 				chunked_upload = ChunkedUpload.objects.get(dataset=dataset, field_name=field_name)
 			except ChunkedUpload.DoesNotExist:
-				self.create_chunked_upload(save=False, upload_id=upload_id, **attrs)
+				chunked_upload = self.create_chunked_upload(save=False, upload_id=upload_id, **attrs)
 			self.is_valid_chunked_upload(chunked_upload)
 		else:
 			chunked_upload = self.create_chunked_upload(save=False, **attrs)
