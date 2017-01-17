@@ -101,7 +101,6 @@ class ChunkedUploadView(ChunkedUploadBaseView):
     if the upload is interrupted.
     """
 
-    field_name = 'file'
     content_range_header = 'HTTP_CONTENT_RANGE'
     content_range_pattern = re.compile(
         r'^bytes (?P<start>\d+)-(?P<end>\d+)/(?P<total>\d+)$'
@@ -162,7 +161,8 @@ class ChunkedUploadView(ChunkedUploadBaseView):
         }
 
     def _post(self, request, *args, **kwargs):
-        chunk = request.FILES.get(self.field_name)
+        field_name = list(request.FILES.keys())[0]
+        chunk = request.FILES.get(field_name)
         if chunk is None:
             raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
                                      detail='No chunk file was submitted')
