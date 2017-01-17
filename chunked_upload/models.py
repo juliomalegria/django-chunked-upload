@@ -116,5 +116,4 @@ class ChunkedUpload(BaseChunkedUpload):
 	Default chunked upload model.
 	To use it, set CHUNKED_UPLOAD_ABSTRACT_MODEL as True in your settings.
 	"""
-
-	user = models.ForeignKey(AUTH_USER_MODEL, related_name='chunked_uploads')
+	pass
