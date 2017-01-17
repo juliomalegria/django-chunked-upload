@@ -27,6 +27,9 @@ class Dataset(models.Model):
 	upload_id = models.CharField(max_length=32, unique=True, editable=False,
 								 default=generate_upload_id)
 
+	def __str__(self):
+		return self.upload_id
+
 
 class BaseChunkedUpload(models.Model):
 	"""
