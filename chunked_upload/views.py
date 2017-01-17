@@ -174,6 +174,7 @@ class ChunkedUploadView(ChunkedUploadBaseView):
 		upload_id = request.POST.get('upload_id')
 		attrs = {'filename': chunk.name}
 		attrs.update(self.get_extra_attrs(request))
+		chunked_upload = None
 		if upload_id:
 			dataset = Dataset.objects.get(upload_id=upload_id)
 			try:
