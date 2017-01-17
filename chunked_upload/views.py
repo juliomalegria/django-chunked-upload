@@ -126,7 +126,7 @@ class ChunkedUploadView(ChunkedUploadBaseView):
 
 		return self.max_bytes
 
-	def create_chunked_upload(self, save=False, upload_id=None, **attrs):
+	def create_chunked_upload(self, save=False, upload_id=None, field_name=None, **attrs):
 		"""
 		Creates new chunked upload instance. Called if no 'upload_id' is
 		found in the POST data.
@@ -138,6 +138,7 @@ class ChunkedUploadView(ChunkedUploadBaseView):
 		chunked_upload = self.model(**attrs)
 		# file starts empty
 		chunked_upload.dataset = dataset
+		chunked_upload.field_name = field_name
 		chunked_upload.file.save(name='', content=ContentFile(''), save=save)
 		return chunked_upload
 
@@ -181,9 +182,9 @@ class ChunkedUploadView(ChunkedUploadBaseView):
 				chunked_upload = ChunkedUpload.objects.get(dataset=dataset, field_name=field_name)
 				self.is_valid_chunked_upload(chunked_upload)
 			except ChunkedUpload.DoesNotExist:
-				chunked_upload = self.create_chunked_upload(save=False, upload_id=upload_id, **attrs)
+				chunked_upload = self.create_chunked_upload(save=False, upload_id=upload_id, field_name=field_name, **attrs)
 		else:
-			chunked_upload = self.create_chunked_upload(save=False, **attrs)
+			chunked_upload = self.create_chunked_upload(save=False, field_name=field_name, **attrs)
 
 		content_range = request.META.get(self.content_range_header, '')
 		match = self.content_range_pattern.match(content_range)
