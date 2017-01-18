@@ -209,8 +209,6 @@ class ChunkedUploadView(ChunkedUploadBaseView):
 				status=http_status.HTTP_400_BAD_REQUEST,
 				detail='Size of file exceeds the limit (%s bytes)' % max_bytes
 			)
-		print(chunked_upload.offset)
-		print(start)
 		if chunked_upload.offset != start:
 			raise ChunkedUploadError(status=http_status.HTTP_400_BAD_REQUEST,
 									 detail='Offsets do not match',
@@ -261,7 +259,11 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
 
 	def _post(self, request, *args, **kwargs):
 		upload_id = request.POST.get('upload_id')
-		md5 = request.POST.get('md5')
+		md5 = {}
+		for key, value in request.POST.dict().items():
+			m = re.search('(?P<key>[^[]*)\[(?P<field>.*)\]', key)
+			if m and m.group('key') == 'md5':
+				md5[m.group('field')] = value
 
 		error_msg = None
 		if self.do_md5_check:
@@ -277,11 +279,15 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
 			self.validate(request)
 			self.is_valid_chunked_upload(chunked_upload)
 			if self.do_md5_check:
-				self.md5_check(chunked_upload, md5)
+				self.md5_check(chunked_upload, md5[chunked_upload.field_name])
 
 			chunked_upload.status = COMPLETE
 			chunked_upload.completed_on = timezone.now()
 			self._save(chunked_upload)
+			mutable = request.POST._mutable
+			request.POST._mutable = True
+			request.POST['file_name'] = chunked_upload.field_name
+			request.POST._mutable = mutable
 			self.on_completion(chunked_upload.get_uploaded_file(), request)
 
 		return Response(self.get_response_data(upload_id, request),
