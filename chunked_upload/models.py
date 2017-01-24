@@ -24,6 +24,10 @@ def generate_filename(instance, filename):
 
 
 class Dataset(models.Model):
+	'''
+	Dataset handles the upload_id, which was originally saved directly in :model:`chunked_upload.ChunkedUpload`. But because multiple file
+	uploads have to work too, Dataset saves the upload_id for all files in one upload to prevent errors.
+	'''
 	upload_id = models.CharField(max_length=32, unique=True, editable=False,
 								 default=generate_upload_id)
 
@@ -117,6 +121,7 @@ class BaseChunkedUpload(models.Model):
 class ChunkedUpload(BaseChunkedUpload):
 	"""
 	Default chunked upload model.
-	To use it, set CHUNKED_UPLOAD_ABSTRACT_MODEL as True in your settings.
+	It handles the chunked uploaded files, saves them and validates correct saving through md5sum and offset.
+	It also gives information about the upload status.
 	"""
 	pass
