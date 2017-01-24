@@ -103,7 +103,7 @@ Add any of these variables into your project settings to override them.
 ``CHUNKED_UPLOAD_STORAGE_CLASS``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Storage system (should be a class).
+* Storage system (import path like in django middleware).
 * Default: ``None`` (use default storage system)
 
 ``CHUNKED_UPLOAD_ABSTRACT_MODEL``

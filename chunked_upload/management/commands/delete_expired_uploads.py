@@ -1,12 +1,10 @@
-from optparse import make_option
-
+from chunked_upload.constants import UPLOADING, COMPLETE
+from chunked_upload.models import ChunkedUpload
+from chunked_upload.settings import EXPIRATION_DELTA
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 
-from chunked_upload.settings import EXPIRATION_DELTA
-from chunked_upload.models import ChunkedUpload
-from chunked_upload.constants import UPLOADING, COMPLETE
 
 prompt_msg = _(u'Do you want to delete {obj}?')
 
@@ -18,13 +16,14 @@ class Command(BaseCommand):
 
     help = 'Deletes chunked uploads that have already expired.'
 
-    option_list = BaseCommand.option_list + (
-        make_option('--interactive',
-                    action='store_true',
-                    dest='interactive',
-                    default=False,
-                    help='Prompt confirmation before each deletion.'),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--interactive',
+            dest='interactive',
+            action='store_true',
+            default=False,
+            help='Prompt confirmation before each deletion.'
+        )
 
     def handle(self, *args, **options):
         interactive = options.get('interactive')
@@ -36,9 +35,9 @@ class Command(BaseCommand):
         for chunked_upload in qs:
             if interactive:
                 prompt = prompt_msg.format(obj=chunked_upload) + u' (y/n): '
-                answer = raw_input(prompt).lower()
+                answer = input(prompt).lower()
                 while answer not in ('y', 'n'):
-                    answer = raw_input(prompt).lower()
+                    answer = input(prompt).lower()
                 if answer == 'n':
                     continue
 
