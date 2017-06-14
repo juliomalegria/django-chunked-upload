@@ -62,19 +62,8 @@ class BaseChunkedUpload(models.Model):
         return u'<%s - upload_id: %s - bytes: %s - status: %s>' % (
             self.filename, self.upload_id, self.offset, self.status)
 
-    def close_file(self):
-        """
-        Bug in django 1.4: FieldFile `close` method is not reaching all the
-        way to the actual python file.
-        Fix: we had to loop all inner files and close them manually.
-        """
-        file_ = self.file
-        while file_ is not None:
-            file_.close()
-            file_ = getattr(file_, 'file', None)
-
     def append_chunk(self, chunk, chunk_size=None, save=True):
-        self.close_file()
+        self.file.close()
         self.file.open(mode='ab')  # mode = append+binary
         # We can use .read() safely because chunk is already in memory
         self.file.write(chunk.read())
@@ -87,10 +76,10 @@ class BaseChunkedUpload(models.Model):
         self._md5 = None  # Clear cached md5
         if save:
             self.save()
-        self.close_file()  # Flush
+        self.file.close()  # Flush
 
     def get_uploaded_file(self):
-        self.close_file()
+        self.file.close()
         self.file.open(mode='rb')  # mode = read+binary
         return UploadedFile(file=self.file, name=self.filename,
                             size=self.offset)
