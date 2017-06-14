@@ -1,4 +1,6 @@
 from datetime import timedelta
+import time
+import os.path
 
 from django.conf import settings
 
@@ -23,6 +25,13 @@ EXPIRATION_DELTA = getattr(settings, 'CHUNKED_UPLOAD_EXPIRATION_DELTA',
 # Path where uploading files will be stored until completion
 DEFAULT_UPLOAD_PATH = 'chunked_uploads/%Y/%m/%d'
 UPLOAD_PATH = getattr(settings, 'CHUNKED_UPLOAD_PATH', DEFAULT_UPLOAD_PATH)
+
+
+# upload_to function to be used in the FileField
+def default_upload_to(instance, filename):
+    filename = os.path.join(UPLOAD_PATH, instance.upload_id + '.part')
+    return time.strftime(filename)
+UPLOAD_TO = getattr(settings, 'CHUNKED_UPLOAD_TO', default_upload_to)
 
 
 # Storage system

@@ -100,6 +100,12 @@ Add any of these variables into your project settings to override them.
 * Path where uploading files will be stored until completion.
 * Default: ``'chunked_uploads/%Y/%m/%d'``
 
+``CHUNKED_UPLOAD_TO``
+~~~~~~~~~~~~~~~~~~~~~
+
+* `upload_to` to be used in the Model's FileField.
+* Default: ``CHUNKED_UPLOAD_PATH + '/{{ instance.upload_id }}.part'``
+
 ``CHUNKED_UPLOAD_STORAGE_CLASS``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
