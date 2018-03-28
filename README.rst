@@ -112,6 +112,12 @@ Add any of these variables into your project settings to override them.
 * Storage system (should be a class).
 * Default: ``None`` (use default storage system)
 
+``CHUNKED_UPLOAD_USE_TEMP_STORAGE``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Activates temporary file storage. Useful for AWS S3.
+* Default: ``False`` (use default storage system or ``CHUNKED_UPLOAD_STORAGE_CLASS``)
+
 ``CHUNKED_UPLOAD_ABSTRACT_MODEL``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
