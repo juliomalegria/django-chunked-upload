@@ -43,7 +43,7 @@ if not USE_TEMP_STORAGE:
 else:
     import tempfile
     from django.core.files.storage import FileSystemStorage
-    STORAGE = FileSystemStorage(location=tempfile.gettempdir())
+    STORAGE = FileSystemStorage(location=tempfile.gettempdir)
 
 
 # Boolean that defines if the ChunkedUpload model is abstract or not
