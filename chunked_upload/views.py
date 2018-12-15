@@ -32,7 +32,7 @@ class ChunkedUploadBaseView(View):
         By default, users can only continue uploading their own uploads.
         """
         queryset = self.model.objects.all()
-        if hasattr(request, 'user') and is_authenticated(request.user):
+        if hasattr(self.model, 'user') and hasattr(request, 'user') and is_authenticated(request.user):
             queryset = queryset.filter(user=request.user)
         return queryset
 
