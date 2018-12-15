@@ -181,7 +181,7 @@ class ChunkedUploadView(ChunkedUploadBaseView):
             self.is_valid_chunked_upload(chunked_upload)
         else:
             attrs = {'filename': chunk.name}
-            if hasattr(request, 'user') and is_authenticated(request.user):
+            if hasattr(self.model, 'user') and hasattr(request, 'user') and is_authenticated(request.user):
                 attrs['user'] = request.user
             attrs.update(self.get_extra_attrs(request))
             chunked_upload = self.create_chunked_upload(save=False, **attrs)
