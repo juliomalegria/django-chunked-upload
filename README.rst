@@ -130,11 +130,6 @@ Add any of these variables into your project settings to override them.
 * Content-Type for the response data.
 * Default: ``'application/json'``
 
-``CHUNKED_UPLOAD_MIMETYPE``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* **Deprecated**, use ``CHUNKED_UPLOAD_CONTENT_TYPE`` instead.
-
 ``CHUNKED_UPLOAD_MAX_BYTES``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
