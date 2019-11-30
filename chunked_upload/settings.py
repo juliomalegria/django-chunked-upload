@@ -1,7 +1,7 @@
-from datetime import timedelta
 import time
 import os.path
-
+from datetime import timedelta
+from django.utils.module_loading import import_string
 from django.conf import settings
 
 try:
@@ -34,7 +34,12 @@ def default_upload_to(instance, filename):
 UPLOAD_TO = getattr(settings, 'CHUNKED_UPLOAD_TO', default_upload_to)
 
 # Storage system
-STORAGE = getattr(settings, 'CHUNKED_UPLOAD_STORAGE_CLASS', lambda: None)()
+
+
+try:
+    STORAGE = getattr(settings, 'CHUNKED_UPLOAD_STORAGE_CLASS', lambda: None)()
+except TypeError:
+    STORAGE = import_string(getattr(settings, 'CHUNKED_UPLOAD_STORAGE_CLASS', lambda: None))()
 
 # Boolean that defines if the ChunkedUpload model is abstract or not
 ABSTRACT_MODEL = getattr(settings, 'CHUNKED_UPLOAD_ABSTRACT_MODEL', True)
