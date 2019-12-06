@@ -112,12 +112,6 @@ Add any of these variables into your project settings to override them.
 * Storage system (should be a class).
 * Default: ``None`` (use default storage system)
 
-``CHUNKED_UPLOAD_ABSTRACT_MODEL``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* Boolean that defines if the ``ChunkedUpload`` model will be abstract or not (`what does abstract model mean? <https://docs.djangoproject.com/en/1.4/ref/models/options/#abstract>`__).
-* Default: ``True``
-
 ``CHUNKED_UPLOAD_ENCODER``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

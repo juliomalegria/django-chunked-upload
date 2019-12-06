@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.utils import timezone
 
-from .settings import EXPIRATION_DELTA, UPLOAD_TO, STORAGE, ABSTRACT_MODEL
+from .settings import EXPIRATION_DELTA, UPLOAD_TO, STORAGE
 from .constants import CHUNKED_UPLOAD_CHOICES, UPLOADING
 
 AUTH_USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
