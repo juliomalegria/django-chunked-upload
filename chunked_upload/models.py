@@ -16,7 +16,7 @@ def generate_upload_id():
     return uuid.uuid4().hex
 
 
-class BaseChunkedUpload(models.Model):
+class AbstractChunkedUpload(models.Model):
     """
     Base chunked upload model. This model is abstract (doesn't create a table
     in the database).
@@ -54,11 +54,11 @@ class BaseChunkedUpload(models.Model):
     def delete(self, delete_file=True, *args, **kwargs):
         if self.file:
             storage, path = self.file.storage, self.file.path
-        super(BaseChunkedUpload, self).delete(*args, **kwargs)
+        super(AbstractChunkedUpload, self).delete(*args, **kwargs)
         if self.file and delete_file:
             storage.delete(path)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'<%s - upload_id: %s - bytes: %s - status: %s>' % (
             self.filename, self.upload_id, self.offset, self.status)
 
@@ -88,14 +88,7 @@ class BaseChunkedUpload(models.Model):
         abstract = True
 
 
-class ChunkedUpload(BaseChunkedUpload):
+class ChunkedUpload(AbstractChunkedUpload):
     """
     Default chunked upload model.
-    To use it, set CHUNKED_UPLOAD_ABSTRACT_MODEL as True in your settings.
     """
-
-    user = models.ForeignKey(AUTH_USER_MODEL, related_name='chunked_uploads',
-                             on_delete=models.CASCADE)
-
-    class Meta:
-        abstract = ABSTRACT_MODEL
