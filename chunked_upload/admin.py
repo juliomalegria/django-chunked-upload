@@ -3,7 +3,7 @@ from .models import ChunkedUpload
 
 
 class ChunkedUploadAdmin(admin.ModelAdmin):
-    list_display = ('upload_id', 'filename', 'user', 'status', 'created_on')
+    list_display = ('upload_id', 'filename', 'status', 'created_on')
     search_fields = ('filename', 'filename')
     list_filter = ('status',)
 
