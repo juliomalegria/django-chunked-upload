@@ -19,7 +19,7 @@ download_url = (
 setup(
     name='django-chunked-upload',
     packages=['chunked_upload'],
-    version=version,
+    version='2.0-pre-01',  # version,
     description=('Upload large files to Django in multiple chunks, with the '
                  'ability to resume if the upload is interrupted.'),
     long_description=readme,
