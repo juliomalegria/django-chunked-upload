@@ -6,10 +6,8 @@ from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.utils import timezone
 
-from .settings import EXPIRATION_DELTA, UPLOAD_TO, STORAGE
+from .settings import EXPIRATION_DELTA, UPLOAD_TO, STORAGE, DEFAULT_MODEL_USER_FIELD_NULL, DEFAULT_MODEL_USER_FIELD_BLANK
 from .constants import CHUNKED_UPLOAD_CHOICES, UPLOADING
-
-AUTH_USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 
 
 def generate_upload_id():
@@ -92,3 +90,10 @@ class ChunkedUpload(AbstractChunkedUpload):
     """
     Default chunked upload model.
     """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='chunked_uploads',
+        null=DEFAULT_MODEL_USER_FIELD_NULL,
+        blank=DEFAULT_MODEL_USER_FIELD_BLANK
+    )
