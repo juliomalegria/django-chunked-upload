@@ -130,6 +130,18 @@ Add any of these variables into your project settings to override them.
 * Max amount of data (in bytes) that can be uploaded. ``None`` means no limit.
 * Default: ``None``
 
+``CHUNKED_UPLOAD_MODEL_USER_FIELD_NULL``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Value of `null <https://docs.djangoproject.com/en/dev/ref/models/fields/#django.db.models.Field.null>`__ option in **user** field of `ChunkedUpload` model
+* Default: ``True``
+
+``CHUNKED_UPLOAD_MODEL_USER_FIELD_BLANK``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Value of `blank <https://docs.djangoproject.com/en/dev/ref/models/fields/#django.db.models.Field.blank>`__ option in **user** field of `ChunkedUpload` model
+* Default: ``True``
+
 Support
 -------
 
