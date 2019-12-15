@@ -137,7 +137,7 @@ Add any of these variables into your project settings to override them.
 * Default: ``True``
 
 ``CHUNKED_UPLOAD_MODEL_USER_FIELD_BLANK``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Value of `blank <https://docs.djangoproject.com/en/dev/ref/models/fields/#django.db.models.Field.blank>`__ option in **user** field of `ChunkedUpload` model
 * Default: ``True``
