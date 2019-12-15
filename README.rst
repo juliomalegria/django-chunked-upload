@@ -112,12 +112,6 @@ Add any of these variables into your project settings to override them.
 * Storage system (should be a class).
 * Default: ``None`` (use default storage system)
 
-``CHUNKED_UPLOAD_ABSTRACT_MODEL``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* Boolean that defines if the ``ChunkedUpload`` model will be abstract or not (`what does abstract model mean? <https://docs.djangoproject.com/en/1.4/ref/models/options/#abstract>`__).
-* Default: ``True``
-
 ``CHUNKED_UPLOAD_ENCODER``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -130,16 +124,23 @@ Add any of these variables into your project settings to override them.
 * Content-Type for the response data.
 * Default: ``'application/json'``
 
-``CHUNKED_UPLOAD_MIMETYPE``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* **Deprecated**, use ``CHUNKED_UPLOAD_CONTENT_TYPE`` instead.
-
 ``CHUNKED_UPLOAD_MAX_BYTES``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Max amount of data (in bytes) that can be uploaded. ``None`` means no limit.
 * Default: ``None``
+
+``CHUNKED_UPLOAD_MODEL_USER_FIELD_NULL``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Value of `null <https://docs.djangoproject.com/en/dev/ref/models/fields/#django.db.models.Field.null>`__ option in **user** field of `ChunkedUpload` model
+* Default: ``True``
+
+``CHUNKED_UPLOAD_MODEL_USER_FIELD_BLANK``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Value of `blank <https://docs.djangoproject.com/en/dev/ref/models/fields/#django.db.models.Field.blank>`__ option in **user** field of `ChunkedUpload` model
+* Default: ``True``
 
 Support
 -------
