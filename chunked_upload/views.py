@@ -25,6 +25,7 @@ class ChunkedUploadBaseView(View):
 
     # Has to be a ChunkedUpload subclass
     model = ChunkedUpload
+    user_field_name = 'user'  # the field name that point towards the AUTH_USER in ChunkedUpload class or its subclasses
 
     def get_queryset(self, request):
         """
@@ -33,7 +34,7 @@ class ChunkedUploadBaseView(View):
         """
         queryset = self.model.objects.all()
         if hasattr(request, 'user') and is_authenticated(request.user):
-            queryset = queryset.filter(user=request.user)
+            queryset = queryset.filter(**{self.user_field_name: request.user})
         return queryset
 
     def validate(self, request):
