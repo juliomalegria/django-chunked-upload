@@ -35,12 +35,10 @@ UPLOAD_TO = getattr(settings, 'CHUNKED_UPLOAD_TO', default_upload_to)
 
 # Storage system
 try:
-    USE_TEMP_STORAGE = getattr(settings, 'CHUNKED_UPLOAD_USE_TEMP_STORAGE', False)
-    # Use django default or via settings defined storage
-    if not USE_TEMP_STORAGE:
-        STORAGE = getattr(settings, 'CHUNKED_UPLOAD_STORAGE_CLASS', lambda: None)()
+    # Use via settings defined storage (temporary storage is the fallback)
+    STORAGE = getattr(settings, 'CHUNKED_UPLOAD_STORAGE_CLASS', lambda: None)()
     # Use temporary storage for chunks
-    else:
+    if not STORAGE:
         from chunked_upload.storages import TemporaryFileStorage
         STORAGE = TemporaryFileStorage()
 
