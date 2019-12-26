@@ -33,7 +33,7 @@ class ChunkedUploadBaseView(View):
         By default, users can only continue uploading their own uploads.
         """
         queryset = self.model.objects.all()
-        if hasattr(request, 'user') and is_authenticated(request.user):
+        if hasattr(self.model, self.user_field_name) and hasattr(request, 'user') and is_authenticated(request.user):
             queryset = queryset.filter(**{self.user_field_name: request.user})
         return queryset
 
@@ -124,7 +124,10 @@ class ChunkedUploadView(ChunkedUploadBaseView):
         Extra attribute values to be passed to the new ChunkedUpload instance.
         Should return a dictionary-like object.
         """
-        return {}
+        attrs = {}
+        if hasattr(self.model, self.user_field_name) and hasattr(request, 'user') and is_authenticated(request.user):
+            attrs[self.user_field_name] = request.user
+        return attrs
 
     def get_max_bytes(self, request):
         """
@@ -182,8 +185,7 @@ class ChunkedUploadView(ChunkedUploadBaseView):
             self.is_valid_chunked_upload(chunked_upload)
         else:
             attrs = {'filename': chunk.name}
-            if hasattr(request, 'user') and is_authenticated(request.user):
-                attrs['user'] = request.user
+
             attrs.update(self.get_extra_attrs(request))
             chunked_upload = self.create_chunked_upload(save=False, **attrs)
 
