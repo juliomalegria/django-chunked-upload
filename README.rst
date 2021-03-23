@@ -110,7 +110,7 @@ Add any of these variables into your project settings to override them.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Storage system (should be a class).
-* Default: ``None`` (use default storage system)
+* Default: ``TemporaryFileStorage``
 
 ``CHUNKED_UPLOAD_ENCODER``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -123,6 +123,7 @@ Add any of these variables into your project settings to override them.
 
 * Content-Type for the response data.
 * Default: ``'application/json'``
+
 
 ``CHUNKED_UPLOAD_MAX_BYTES``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
