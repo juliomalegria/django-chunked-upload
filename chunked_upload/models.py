@@ -6,17 +6,15 @@ from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.utils import timezone
 
-from .settings import EXPIRATION_DELTA, UPLOAD_TO, STORAGE, ABSTRACT_MODEL
+from .settings import EXPIRATION_DELTA, UPLOAD_TO, STORAGE, DEFAULT_MODEL_USER_FIELD_NULL, DEFAULT_MODEL_USER_FIELD_BLANK
 from .constants import CHUNKED_UPLOAD_CHOICES, UPLOADING
-
-AUTH_USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 
 
 def generate_upload_id():
     return uuid.uuid4().hex
 
 
-class BaseChunkedUpload(models.Model):
+class AbstractChunkedUpload(models.Model):
     """
     Base chunked upload model. This model is abstract (doesn't create a table
     in the database).
@@ -54,19 +52,19 @@ class BaseChunkedUpload(models.Model):
     def delete(self, delete_file=True, *args, **kwargs):
         if self.file:
             storage, path = self.file.storage, self.file.path
-        super(BaseChunkedUpload, self).delete(*args, **kwargs)
+        super(AbstractChunkedUpload, self).delete(*args, **kwargs)
         if self.file and delete_file:
             storage.delete(path)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'<%s - upload_id: %s - bytes: %s - status: %s>' % (
             self.filename, self.upload_id, self.offset, self.status)
 
     def append_chunk(self, chunk, chunk_size=None, save=True):
         self.file.close()
-        self.file.open(mode='ab')  # mode = append+binary
-        # We can use .read() safely because chunk is already in memory
-        self.file.write(chunk.read())
+        with open(self.file.path, mode='ab') as file_obj:  # mode = append+binary
+            file_obj.write(chunk.read())  # We can use .read() safely because chunk is already in memory
+
         if chunk_size is not None:
             self.offset += chunk_size
         elif hasattr(chunk, 'size'):
@@ -88,14 +86,14 @@ class BaseChunkedUpload(models.Model):
         abstract = True
 
 
-class ChunkedUpload(BaseChunkedUpload):
+class ChunkedUpload(AbstractChunkedUpload):
     """
     Default chunked upload model.
-    To use it, set CHUNKED_UPLOAD_ABSTRACT_MODEL as True in your settings.
     """
-
-    user = models.ForeignKey(AUTH_USER_MODEL, related_name='chunked_uploads',
-                             on_delete=models.CASCADE)
-
-    class Meta:
-        abstract = ABSTRACT_MODEL
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='chunked_uploads',
+        null=DEFAULT_MODEL_USER_FIELD_NULL,
+        blank=DEFAULT_MODEL_USER_FIELD_BLANK
+    )
