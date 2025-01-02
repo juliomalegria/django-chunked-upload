@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from chunked_upload.settings import EXPIRATION_DELTA
 from chunked_upload.models import ChunkedUpload
