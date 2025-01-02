@@ -1,4 +1,4 @@
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 
 class http_status:
@@ -12,6 +12,6 @@ UPLOADING = 1
 COMPLETE = 2
 
 CHUNKED_UPLOAD_CHOICES = (
-    (UPLOADING, _('Uploading')),
-    (COMPLETE, _('Complete')),
+    (UPLOADING, _("Uploading")),
+    (COMPLETE, _("Complete")),
 )
