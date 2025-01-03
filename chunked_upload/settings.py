@@ -34,10 +34,14 @@ def default_upload_to(instance, filename):
 UPLOAD_TO = getattr(settings, 'CHUNKED_UPLOAD_TO', default_upload_to)
 
 # Storage system
-
-
 try:
+    # Use via settings defined storage (temporary storage is the fallback)
     STORAGE = getattr(settings, 'CHUNKED_UPLOAD_STORAGE_CLASS', lambda: None)()
+    # Use temporary storage for chunks
+    if not STORAGE:
+        from chunked_upload.storages import TemporaryFileStorage
+        STORAGE = TemporaryFileStorage()
+
 except TypeError:
     STORAGE = import_string(getattr(settings, 'CHUNKED_UPLOAD_STORAGE_CLASS', lambda: None))()
 
