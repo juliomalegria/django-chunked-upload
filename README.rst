@@ -148,3 +148,17 @@ Support
 -------
 
 If you find any bug or you want to propose a new feature, please use the `issues tracker <https://github.com/juliomalegria/django-chunked-upload/issues>`__. I'll be happy to help you! :-)
+
+Running the tests
+-----------------
+
+The suite runs standalone: no project, database server or Docker needed.
+
+.. code-block:: bash
+
+    pip install "Django>=5.2,<5.3"
+    python runtests.py                      # everything
+    python runtests.py chunked_upload.tests.RefusalTests   # one class
+
+It uses ``test_settings.py`` (in-memory sqlite, a temporary ``MEDIA_ROOT``) and
+``test_urls.py`` (the two views, unmodified).
